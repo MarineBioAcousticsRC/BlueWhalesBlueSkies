@@ -1,0 +1,164 @@
+---
+title: "Protecting Blue Whales and Blue Skies: Vessel Speed Reduction in the Santa Barbara Channel"
+author: "Vanessa ZoBell, Kaitlin Frasier, Sean Hastings, Leila Hatch, Jessica Morten, John Hildebrand"
+date: "7/17/2019"
+output: html_document
+---
+
+The "Blue Whales & Blue Skies" incentive based vessel speed reduction program was implented in 2014 by a coalition of government agencies and non-profit organizations in the Santa Barbara Channel region.  In order to reduce emissions, noise pollution, and ship strikes, the program gave shipping companies a financial incentive to cut ship speeds to 12 knots in 2014 through 2017 and 10 knots in 2018 through 2019.
+
+During the speed reduction program, High-frequency Acoustic Recording Packages (HARPs) were deployed and retrieved at two different sites in the Santa Barbara Channel. The eastern sites were within a 2 km distance from the speed reduction zone. The western sites were within a 72 km distance from the speed reduction zone. The map below outlines the speed reduction area for the years 2014 through 2019. The markers indicate locations where High-frequency Acoustic Recording Packages were deployed. Markers show dates of deployment and retrieval of the HARPs. HARPs will continue to be deployed through 2019.
+
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+
+knitr::opts_chunk$set(echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, results="hide", comment = NA)
+
+
+
+library(leaflet)
+library(leaflet.extras)
+library(measurements)
+library(sp)
+library(dplyr)
+
+#reading in harp location data
+data = read.csv("HARPlocations.csv", header = TRUE, stringsAsFactors = FALSE)
+
+
+#change the degree symbol to a space
+data$lat = gsub('°', ' ', data$lat)
+data$long = gsub('°', ' ', data$long)
+
+#convert from decimalminute to decimal degree
+data$lat = measurements::conv_unit(data$lat, from = 'deg_dec_min', to = 'dec_deg')
+data$long = measurements::conv_unit(data$long, from = 'deg_dec_min', to = 'dec_deg')
+
+#get lat and longs as numerics
+data$lat = as.numeric(data$lat)
+data$long = as.numeric(data$long)
+
+
+#never used this
+#take the CSV, turn it into a spatial points dataframe that willallow us to map
+#get the spatial data from columns 4 and 5 and get the negativepoints from column 4 and 5
+#data.SP = SpatialPointsDataFrame(data[,c(4,5)], data[,-c(4,5)])
+
+#filtering for different  years and sites
+d2014= filter(data, group=="2014")
+
+d2015 = filter(data, group=="2015")
+
+d2016 = filter(data, group=="2016")
+
+d2017 = filter(data, group=="2017")
+
+d2018 = filter(data, group=="2018")
+
+d2019 = filter(data, group=="2019")
+
+
+
+
+#getting speed reduction coordinate points for zone
+SRZ = read.csv("SRZ.csv")
+#change the degree symbol to a space
+SRZ$lat = gsub('°', ' ', SRZ$lat)
+SRZ$long = gsub('°', ' ', SRZ$long)
+
+#convert from decimalminute to decimal degree
+SRZ$lat = measurements::conv_unit(SRZ$lat, from = 'deg_dec_min', to = 'dec_deg')
+SRZ$long = measurements::conv_unit(SRZ$long, from = 'deg_dec_min', to = 'dec_deg')
+
+#making lat and long as numeric
+SRZ$lat = as.numeric(SRZ$lat)
+SRZ$long = as.numeric(SRZ$long)
+
+#filtering into groups
+SRZ2015 = filter(SRZ, date=="2015")
+SRZ2016 = filter(SRZ, date=="2016")
+SRZ2017 = filter(SRZ, date=="2017")
+SRZ2018 = filter(SRZ, date=="2018")
+
+
+##getting national marine sanctuary coordinate points
+NMS = read.csv("CINMS.csv")
+NMS$lat = as.numeric(NMS$lat)
+NMS$lat = as.numeric(NMS$lat)
+UNMS = filter(NMS, area=="CINMS")##upper CINMS
+LNMS = filter(NMS, area=="lCINMS")##lower CINMS
+
+CINMS = leaflet() %>%
+  addTiles() %>% 
+  fitBounds( -121.043, 34.555804, -119.225879, 33.575726) %>% 
+  addMarkers(data = d2014, lng = ~long, lat = ~lat, 
+             popup = ~paste("<h3> HARP Location</h3>", "<b>Deploy Date:</b>", 
+                            Deployed, "<br>", "<b>Recover Date:</b>", Recovered, sep = " "), 
+             group = '2014') %>%
+  addMarkers(data = d2015, lng = ~long, lat = ~lat, 
+             popup = ~paste("<h3> HARP Location</h3>", "<b>Deploy Date:</b>", 
+                            Deployed, "<br>", "<b>Recover Date:</b>", Recovered, sep = " "), 
+             group = '2015')  %>%
+  addMarkers(data = d2016, lng = ~long, lat = ~lat, 
+             popup = ~paste("<h3> HARP Location</h3>", "<b>Deploy Date:</b>", 
+                            Deployed, "<br>", "<b>Recover Date:</b>", Recovered, sep = " "), 
+             group = '2016') %>%
+  addMarkers(data = d2017, lng = ~long, lat = ~lat, 
+             popup = ~paste("<h3> HARP Location</h3>", "<b>Deploy Date:</b>", 
+                            Deployed, "<br>", "<b>Recover Date:</b>", Recovered, sep = " "), 
+             group = '2017') %>%
+  addMarkers(data = d2018, lng = ~long, lat = ~lat, 
+             popup = ~paste("<h3> HARP Location</h3>", "<b>Deploy Date:</b>", 
+                            Deployed, "<br>", "<b>Recover Date:</b>", Recovered, sep = " "), 
+             group = '2018') %>%
+  addMarkers(data = d2019, lng = ~long, lat = ~lat, 
+             popup = ~paste("<h3> HARP Location</h3>", "<b>Deploy Date:</b>", 
+                            Deployed, "<br>", "<b>Recover Date:</b>", Recovered, sep = " "), 
+             group = '2019') %>%
+  addProviderTiles("Esri.OceanBasemap") %>% 
+  addPolygons(data = SRZ2015, lng = ~long, lat = ~lat,
+              color = "orange",
+              opacity = .5, 
+              fillOpacity = 0.2, 
+              group = '2015') %>% 
+  addPolygons(data = SRZ2016, lng = ~long, lat = ~lat,
+              color = "orange",
+              opacity = .5, 
+              fillOpacity = 0.2, 
+              group = '2016') %>% 
+  addPolygons(data = SRZ2017, lng = ~long, lat = ~lat,
+              color = "orange",
+              opacity = .5, 
+              fillOpacity = 0.2, 
+              group = '2017') %>% 
+  addPolygons(data = SRZ2018, lng = ~long, lat = ~lat,
+              color = "orange",
+              opacity = .5, 
+              fillOpacity = 0.2, 
+              group = '2018') %>% 
+  addPolygons(data = UNMS, lng = ~long, lat = ~lat,
+              color = "green", 
+              opacity = .8, 
+              fillOpacity = .2, 
+              group = c('2014', '2015', '2016', '2017', '2018')) %>% 
+  addPolygons(data = LNMS, lng = ~long, lat = ~lat,
+              color = "green", 
+              opacity = .8, 
+              fillOpacity = .2, 
+              group = c('2014', '2015', '2016', '2017', '2018', '2019')) %>% 
+  addLayersControl(overlayGroups = c('2014','2015', '2016', '2017', '2018', '2019'), 
+                   options = layersControlOptions(collapsed = FALSE)) %>% 
+  hideGroup(c("2014", "2015", "2017", "2016", '2019')) %>%
+  addMeasure(
+    position = "topleft",
+    primaryLengthUnit = "meters", 
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>%  
+  addLegend(position = "bottomright", title = "Incentive Based Vessel Speed Reduction", labels = c("Channel Islands National Marine Sanctuary", "Speed Reduction Zone"), colors = c("green", "orange"))
+
+
+CINMS
+
+```
+
