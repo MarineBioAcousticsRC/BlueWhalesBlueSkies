@@ -34,7 +34,7 @@ FileNamePrefix=ProjectName;
 shellcmd=['mkdir ' ProjectName];
 dos(shellcmd);
 
-%% Run RAM
+% Run RAM
 
 %Line in ram(s)geo.in that has frequency
 replaceLineFreq = 2;
