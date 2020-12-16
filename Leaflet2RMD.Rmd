@@ -40,10 +40,7 @@ data$lat = as.numeric(data$lat)
 data$long = as.numeric(data$long)
 
 
-#never used this
-#take the CSV, turn it into a spatial points dataframe that willallow us to map
-#get the spatial data from columns 4 and 5 and get the negativepoints from column 4 and 5
-#data.SP = SpatialPointsDataFrame(data[,c(4,5)], data[,-c(4,5)])
+
 
 #filtering for different  years and sites
 d2014= filter(data, group=="2014")
