@@ -11,7 +11,6 @@ wavFilename = strrep(fn,'.txt','.wav');
 n = length(fn);
 
 
-
 %This loop reads in the .wav files, CPA Time, CPA Distance, and Mean Speed
 for k = 1:n
     
