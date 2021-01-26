@@ -1,4 +1,4 @@
-function [TL_SS] = range2SS_TL(f0, f1, zr, zs, r, pH, T, S, c)
+function [TL_SS] = range2SS_TL(f0, f1, r, zs, zr, pH, T, S, c)
 
 % take Range, Depth, Frequency, Salinity, Temperature, and pH to
 % compute the frequency dependent spherical spreading between a source and
@@ -8,7 +8,7 @@ function [TL_SS] = range2SS_TL(f0, f1, zr, zs, r, pH, T, S, c)
 % f1 = end frequency (Hz)
 % zr = depth of receiver (m)
 % zs = depth of source (m)
-% r = range to receiver (m)
+% r = horizontal range to receiver (m)
 % pH = pH
 % T = temperature
 % S = salinity
@@ -17,9 +17,9 @@ function [TL_SS] = range2SS_TL(f0, f1, zr, zs, r, pH, T, S, c)
 f = f0:f1; %range of frequencies
 f = f/1000; %changing it to kHz
 f = f';
-D = zr - zs; % vertical depth from source to receiver
+D = zr
 
-slantRange = sqrt((r.^2) + D.^2); %slant range from receiver to source
+slantRange = sqrt((r^2) + ((zs-zr)^2))
 
 %Boric Acid Contribution
 A1 = (8.86/c)*10^((0.78*pH) -5);
@@ -45,8 +45,10 @@ end
 %%%range
 alpha = alpha/1000;
 alpha = alpha';
+slantRange = slantRange'
 TL = 20*log10(slantRange);%spherical spreading transmission loss at each frequency
 
 %adding alpha to the spherical spreading model for frequency dependent TL
 TL_SS = TL + alpha*(slantRange);
 end
+
